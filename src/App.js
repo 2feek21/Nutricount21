@@ -17,7 +17,6 @@ Format exact :
 {"dish":"Nom du plat","items":["aliment 1"],"calories":450,"protein":28,"carbs":52,"fat":14,"confidence":"high","confidence_reason":"Explication","portion_note":"Note portion"}
 Règles : calories/protein/carbs/fat sont des entiers. confidence=high|medium|low. Si impossible : {"error":"Raison"}.`;
 
-// ─── CSS ──────────────────────────────────────────────────────────────────────
 const globalCss = `
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { background: #F4F4F4; font-family: system-ui, -apple-system, sans-serif; }
@@ -33,12 +32,11 @@ const globalCss = `
     padding: 9px 12px; font-size: 14px; width: 100%; outline: none;
     font-family: inherit;
   }
-  input:focus, select:focus { border-color: ${GREEN}; box-shadow: 0 0 0 2px ${GREEN}22; }
+  input:focus, select:focus { border-color: #1D9E75; box-shadow: 0 0 0 2px #1D9E7522; }
   button { cursor: pointer; font-size: 14px; border-radius: 10px; transition: opacity .15s, transform .1s; font-family: inherit; }
   button:active { transform: scale(.97); }
 `;
 
-// ─── UI PRIMITIVES ────────────────────────────────────────────────────────────
 function Btn({ onClick, children, style = {}, disabled = false }) {
   return <button onClick={onClick} disabled={disabled} style={{ background: GREEN, color: "#fff", border: "none", padding: "11px 0", fontWeight: 600, width: "100%", opacity: disabled ? .5 : 1, ...style }}>{children}</button>;
 }
@@ -83,10 +81,8 @@ function ProgressRing({ pct, color, size = 56 }) {
   </svg>;
 }
 
-// ─── AUTH ─────────────────────────────────────────────────────────────────────
 function LoginScreen({ onLogin, onGoRegister }) {
   const [email, setEmail] = useState(""), [pw, setPw] = useState(""), [err, setErr] = useState(""), [loading, setLoading] = useState(false);
-
   const submit = async () => {
     if (!email || !pw) { setErr("Remplis tous les champs"); return; }
     setLoading(true); setErr("");
@@ -98,7 +94,6 @@ function LoginScreen({ onLogin, onGoRegister }) {
     } catch (e) { setErr(e.message); }
     setLoading(false);
   };
-
   return <div style={{ padding: "32px 24px", display: "flex", flexDirection: "column", gap: 12 }}>
     <div style={{ textAlign: "center", marginBottom: 8 }}>
       <div style={{ fontSize: 32, fontWeight: 800, color: GREEN }}>CalorIA</div>
@@ -116,7 +111,6 @@ function RegisterScreen({ onRegister, onGoLogin }) {
   const [f, setF] = useState({ firstName: "", lastName: "", email: "", password: "", plan: "free" });
   const [err, setErr] = useState(""), [loading, setLoading] = useState(false);
   const set = k => e => setF(p => ({ ...p, [k]: e.target.value }));
-
   const submit = async () => {
     if (!f.firstName || !f.lastName || !f.email || !f.password) { setErr("Tous les champs sont requis"); return; }
     if (f.password.length < 6) { setErr("Mot de passe : 6 caractères minimum"); return; }
@@ -131,7 +125,6 @@ function RegisterScreen({ onRegister, onGoLogin }) {
     } catch (e) { setErr(e.message); }
     setLoading(false);
   };
-
   return <div style={{ padding: "28px 24px", display: "flex", flexDirection: "column", gap: 12 }}>
     <div style={{ textAlign: "center", marginBottom: 4 }}>
       <div style={{ fontSize: 22, fontWeight: 700 }}>Créer un compte</div>
@@ -148,7 +141,7 @@ function RegisterScreen({ onRegister, onGoLogin }) {
       <div style={{ fontSize: 12, color: "#888", marginBottom: 6 }}>Formule</div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
         {[["free", "Gratuit", "3 scans/jour"], ["premium", "Premium", "Illimité"]].map(([k, label, sub]) => (
-          <div key={k} onClick={() => setF(p => ({ ...p, plan: k }))} style={{ border: `2px solid ${f.plan === k ? (k === "premium" ? PURPLE : GREEN) : "#E0E0E0"}`, borderRadius: 12, padding: "12px 10px", cursor: "pointer", background: f.plan === k ? (k === "premium" ? "#7F77DD11" : "#E1F5EE") : "#fff", textAlign: "center", transition: "all .15s" }}>
+          <div key={k} onClick={() => setF(p => ({ ...p, plan: k }))} style={{ border: `2px solid ${f.plan === k ? (k === "premium" ? PURPLE : GREEN) : "#E0E0E0"}`, borderRadius: 12, padding: "12px 10px", cursor: "pointer", background: f.plan === k ? (k === "premium" ? "#7F77DD11" : "#E1F5EE") : "#fff", textAlign: "center" }}>
             <div style={{ fontWeight: 600, fontSize: 13, color: f.plan === k ? (k === "premium" ? PURPLE : GREEN) : "#333" }}>{label}</div>
             <div style={{ fontSize: 11, color: "#aaa", marginTop: 2 }}>{sub}</div>
           </div>
@@ -169,7 +162,6 @@ function ConfirmScreen({ email, onGoLogin }) {
   </div>;
 }
 
-// ─── SCANNER ─────────────────────────────────────────────────────────────────
 function ScannerTab({ user, onScanComplete, onUpgrade }) {
   const [state, setState] = useState("idle");
   const [imgSrc, setImgSrc] = useState(null);
@@ -198,22 +190,22 @@ function ScannerTab({ user, onScanComplete, onUpgrade }) {
     if (!imgBase64) return;
     setState("loading"); setErr(null);
     try {
-const res = await fetch("/api/analyze", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
-    model: "claude-sonnet-4-20250514",
-    max_tokens: 300,
-    system: SYSTEM_PROMPT,
-    messages: [{
-      role: "user",
-      content: [
-        { type: "image", source: { type: "base64", media_type: imgType, data: imgBase64 } },
-        { type: "text", text: "Analyse ce repas." }
-      ]
-    }]
-  })
-});
+      const res = await fetch("/api/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 300,
+          system: SYSTEM_PROMPT,
+          messages: [{
+            role: "user",
+            content: [
+              { type: "image", source: { type: "base64", media_type: imgType, data: imgBase64 } },
+              { type: "text", text: "Analyse ce repas." }
+            ]
+          }]
+        })
+      });
       const data = await res.json();
       const text = data.content?.map(b => b.text || "").join("").trim();
       const parsed = JSON.parse(text);
@@ -286,11 +278,9 @@ const res = await fetch("/api/analyze", {
   </div>;
 }
 
-// ─── JOURNAL ─────────────────────────────────────────────────────────────────
 function JournalTab({ user }) {
   const [scans, setScans] = useState([]), [loading, setLoading] = useState(true);
   const goal = 1800;
-
   useEffect(() => {
     supabase.from("scans").select("*").eq("user_id", user.uid).order("scanned_at", { ascending: false }).limit(50)
       .then(({ data }) => { setScans(data || []); setLoading(false); });
@@ -306,7 +296,6 @@ function JournalTab({ user }) {
   const totalF = todayScans.reduce((s, e) => s + (e.fat || 0), 0);
 
   if (loading) return <div style={{ padding: 40, textAlign: "center" }}><Spinner /></div>;
-
   return <div style={{ padding: "16px 16px 20px" }}>
     <div style={{ background: "#F8FFFE", borderRadius: 16, padding: 16, marginBottom: 14, border: `1px solid ${GREEN}22` }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
@@ -318,14 +307,12 @@ function JournalTab({ user }) {
       </div>
       <div style={{ fontSize: 11, color: "#aaa" }}>{pct >= 100 ? "Objectif atteint 🎯" : `${goal - total} kcal restantes · ${pct}%`}</div>
     </div>
-
     {todayScans.length > 0 && <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #E8E8E8", padding: 14, marginBottom: 14 }}>
       <div style={{ fontSize: 11, fontWeight: 700, color: "#888", marginBottom: 10, textTransform: "uppercase", letterSpacing: .5 }}>Macros du jour</div>
       <MacroBar label="Protéines" value={totalP} total={totalP + totalC + totalF} color={GREEN} />
       <MacroBar label="Glucides" value={totalC} total={totalP + totalC + totalF} color={ORANGE} />
       <MacroBar label="Lipides" value={totalF} total={totalP + totalC + totalF} color={BLUE} />
     </div>}
-
     {todayScans.length === 0
       ? <div style={{ textAlign: "center", padding: 40, color: "#ccc" }}>
         <div style={{ fontSize: 32, marginBottom: 8 }}>🍽️</div>
@@ -350,7 +337,6 @@ function JournalTab({ user }) {
   </div>;
 }
 
-// ─── PROFIL ───────────────────────────────────────────────────────────────────
 function ProfileTab({ user, onLogout, onUpgrade, onProfileUpdate }) {
   const [weight, setWeight] = useState(""), [height, setHeight] = useState(""), [age, setAge] = useState(""), [act, setAct] = useState("moderate");
   const mult = { sedentary: 1.2, light: 1.375, moderate: 1.55, active: 1.725 };
@@ -385,13 +371,11 @@ function ProfileTab({ user, onLogout, onUpgrade, onProfileUpdate }) {
         </div>
       </div>
     </div>
-
     {user.plan === "free" && <div style={{ background: "#7F77DD11", border: `1px solid ${PURPLE}33`, borderRadius: 14, padding: 14, marginBottom: 14 }}>
       <div style={{ fontWeight: 700, fontSize: 14, color: PURPLE, marginBottom: 4 }}>✦ Passer Premium</div>
       <div style={{ fontSize: 12, color: "#555", marginBottom: 10 }}>Scans illimités, historique complet</div>
       <Btn onClick={upgradePlan} style={{ background: PURPLE, border: "none" }}>Activer Premium</Btn>
     </div>}
-
     <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #E8E8E8", padding: 14, marginBottom: 14 }}>
       <div style={{ fontSize: 11, fontWeight: 700, color: "#888", marginBottom: 12, textTransform: "uppercase", letterSpacing: .5 }}>Calcul TDEE</div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
@@ -418,7 +402,6 @@ function ProfileTab({ user, onLogout, onUpgrade, onProfileUpdate }) {
   </div>;
 }
 
-// ─── BACKOFFICE ───────────────────────────────────────────────────────────────
 function Backoffice({ onClose }) {
   const [boTab, setBoTab] = useState("dashboard");
   const [users, setUsers] = useState([]), [scans, setScans] = useState([]), [loading, setLoading] = useState(true), [search, setSearch] = useState("");
@@ -468,10 +451,8 @@ function Backoffice({ onClose }) {
         <button key={k} onClick={() => setBoTab(k)} style={{ flex: 1, padding: "11px 0", fontSize: 12, fontWeight: boTab === k ? 700 : 400, color: boTab === k ? "#fff" : "#7070A0", border: "none", background: "transparent", borderBottom: boTab === k ? `2.5px solid ${GREEN}` : "2.5px solid transparent" }}>{v}</button>
       ))}
     </div>
-
     <div style={{ padding: 14 }}>
       {loading && <div style={{ padding: 40, textAlign: "center" }}><Spinner /><div style={{ color: "#aaa", fontSize: 13, marginTop: 10 }}>Chargement...</div></div>}
-
       {!loading && boTab === "dashboard" && <div className="fi">
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 14 }}>
           <StatCard label="Utilisateurs" value={total} sub={`${premium} premium`} />
@@ -507,7 +488,6 @@ function Backoffice({ onClose }) {
           ))}
         </div>
       </div>}
-
       {!loading && boTab === "users" && <div className="fi">
         <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Rechercher..." style={{ marginBottom: 12, background: "#1A1A3E", border: "1px solid #2A2A5A", color: "#ddd" }} />
         {filtered.map(u => (
@@ -526,7 +506,6 @@ function Backoffice({ onClose }) {
           </div>
         ))}
       </div>}
-
       {!loading && boTab === "scans" && <div className="fi">
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 14 }}>
           <StatCard label="Total scans" value={scans.length} />
@@ -551,7 +530,6 @@ function Backoffice({ onClose }) {
   </div>;
 }
 
-// ─── MAIN ─────────────────────────────────────────────────────────────────────
 export default function App() {
   const [screen, setScreen] = useState("login");
   const [user, setUser] = useState(null);
@@ -579,7 +557,6 @@ export default function App() {
 
   return <div style={{ maxWidth: 430, margin: "0 auto", minHeight: "100vh", display: "flex", flexDirection: "column", background: "#FAFAFA" }}>
     <style>{globalCss}</style>
-
     {showUpgrade && <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.55)", display: "flex", alignItems: "flex-end", justifyContent: "center", zIndex: 50 }}>
       <div style={{ background: "#fff", borderRadius: "20px 20px 0 0", padding: 24, width: "100%", maxWidth: 430 }}>
         <div style={{ textAlign: "center", marginBottom: 18 }}>
